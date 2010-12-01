@@ -275,6 +275,9 @@ S_mro_get_linear_isa_c3(pTHX_ HV* stash, U32 level)
     }
 
  done:
+    /* in any case, we add UNIVERSAL to the lookup */
+    av_push(retval, newSVpvn("UNIVERSAL",9));
+
     /* we don't want anyone modifying the cache entry but us,
        and we do so by replacing it completely */
     SvREADONLY_on(retval);

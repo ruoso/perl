@@ -421,12 +421,9 @@ Perl_gv_fetchmeth(pTHX_ HV *stash, const char *name, STRLEN len, I32 level)
 
     PERL_ARGS_ASSERT_GV_FETCHMETH;
 
-    /* UNIVERSAL methods should be callable without a stash */
-    if (!stash) {
-	create = 0;  /* probably appropriate */
-	if(!(stash = gv_stashpvs("UNIVERSAL", 0)))
-	    return 0;
-    }
+    /* no longer falls back to UNIVERSAL lookup here */
+    if (!stash)
+	return 0;
 
     assert(stash);
 
@@ -510,21 +507,6 @@ Perl_gv_fetchmeth(pTHX_ HV *stash, const char *name, STRLEN len, I32 level)
                   GvCVGEN(topgv) = topgen_cmp;
             }
 	    return candidate;
-        }
-    }
-
-    /* Check UNIVERSAL without caching */
-    if(level == 0 || level == -1) {
-        candidate = gv_fetchmeth(NULL, name, len, 1);
-        if(candidate) {
-            cand_cv = GvCV(candidate);
-            if (topgv && (GvREFCNT(topgv) == 1) && (CvROOT(cand_cv) || CvXSUB(cand_cv))) {
-                  if ((old_cv = GvCV(topgv))) SvREFCNT_dec(old_cv);
-                  SvREFCNT_inc_simple_void_NN(cand_cv);
-                  GvCV(topgv) = cand_cv;
-                  GvCVGEN(topgv) = topgen_cmp;
-            }
-            return candidate;
         }
     }
 
